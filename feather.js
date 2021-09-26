@@ -5,30 +5,6 @@ import { Point, Bezier, QuadSpline, BSpline, Screen, Pen} from './libs/drawing.j
 const canvas = document.getElementById("canvas")
 const ctx = canvas.getContext('2d')
 
-// this gets quadratic spline with matrix calcs
-//const {mat2, mat3, mat4, vec2, vec3, vec4} = glMatrix;
-/*
-const quadBezFirstMatrix = mat3.fromValues(2, -3, 1, -4, 4,0 , 2, 0, 0)
-const quadBezLastMatrix = mat3.fromValues(1, -3, 2, -2, 2, 0, 1, 1, 0)
-const quadBezMidMatrix = mat3.fromValues(1, -2, 1, -2, 2, 0, 1, 1, 0)
-
-function quadSplineFromThreeControlPoints(p1, p2, p3, pos='mid') {
-  let vectorMatrix = mat3.fromValues(...p1,0, ...p2,0, ...p3,0)
-  let tempMatrix = mat3.create()
-  let resultVec = vec2.create()
-  let quadBezMatrix = 
-    pos == 'first' ? quadBezFirstMatrix :
-    pos == 'last' ? quadBezLastMatrix : quadBezMidMatrix
-    
-  return (t) => {
-    let tvec = vec3.fromValues(t*t, t, 1)
-    mat3.multiply(tempMatrix, vectorMatrix, quadBezMatrix)
-    vec3.transformMat3(tvec,tvec, tempMatrix)
-    vec3.scale(tvec,tvec,0.5)
-    return tvec
-  }
-}
-*/
 
 const backgroundColor = `rgb(255,255,255)`
 const foregroundColor = 'black'
