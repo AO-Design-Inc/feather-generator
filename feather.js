@@ -1,8 +1,13 @@
+import {mat2, mat3, mat4, vec2, vec3, vec4} from './gl-matrix-3.3.0/src/index.js'
+import DoublyLinkedList from './libs/doublyLinkedList.js'
+import { Point, Bezier, QuadSpline, BSpline, Screen, Pen} from './libs/drawing.js'
+
 const canvas = document.getElementById("canvas")
 const ctx = canvas.getContext('2d')
 
 // this gets quadratic spline with matrix calcs
-const {mat2, mat3, mat4, vec2, vec3, vec4} = glMatrix;
+//const {mat2, mat3, mat4, vec2, vec3, vec4} = glMatrix;
+/*
 const quadBezFirstMatrix = mat3.fromValues(2, -3, 1, -4, 4,0 , 2, 0, 0)
 const quadBezLastMatrix = mat3.fromValues(1, -3, 2, -2, 2, 0, 1, 1, 0)
 const quadBezMidMatrix = mat3.fromValues(1, -2, 1, -2, 2, 0, 1, 1, 0)
@@ -23,7 +28,7 @@ function quadSplineFromThreeControlPoints(p1, p2, p3, pos='mid') {
     return tvec
   }
 }
-
+*/
 
 const backgroundColor = `rgb(255,255,255)`
 const foregroundColor = 'black'
@@ -55,31 +60,6 @@ const genParams = {
 }
 
 const getIterLength = (n_iters, total_len) => total_len/n_iters
-class Pen {
-  constructor(x,y,angle,ctx) {
-    this.x = x
-    this.y = y
-    this.angle = angle
-    this.path = new Path2D()
-    this.path.moveTo(x,y)
-  }
-
-  draw(length) {
-    const newx = this.x + Math.cos(this.angle) * length
-    const newy = this.y + Math.sin(this.angle) * length
-    this.path.lineTo(newx,newy)
-    this.x = newx
-    this.y = newy
-  }
-
-  render() {
-    ctx.stroke(this.path)
-  }
-
-  boundsCheck(boundPath) {
-    return ctx.isPointInPath(boundPath, this.x, this.y)
-  }
-}
 
 
 function Rgen(boundPath) {
@@ -148,266 +128,9 @@ function Brgen(x,y,cur_angle, Fl, boundPath) {
   }
 }
 
-class Point {
-  constructor(x,y) {
-    this.path = new Path2D()
-    this.coords = [x,y]
-  }
-
-  set coords(args) {
-    this.x = args[0]
-    this.y = args[1]
-  }
-
-  get coords() {
-    return [this.x, this.y]
-  }
-
-  render() {
-    this.path = new Path2D()
-    this.path.rect(this.x, this.y, 10, 10)
-    return this.path
-  }
-}
-
-class Bezier {
-  constructor() {
-    this.controlPoints = 
-      [new Point(this), new Point(this), new Point(this)]
-    this.path = new Path2D();
-  }
-
-  render() {
-    this.path = new Path2D()
-    this.path.moveTo(this.controlPoints[0].x, this.controlPoints[0].y)
-    this.path.quadraticCurveTo(
-      this.controlPoints[1].x, this.controlPoints[1].y,
-      this.controlPoints[2].x, this.controlPoints[2].y
-    )
-
-    return this.path
-  }
-}
-
-class QuadSpline {
-  constructor(p1,p2,p3,pos) {
-    this.controlPoints = [p1,p2,p3]
-    this.splineRenderer = quadSplineFromThreeControlPoints(
-      [this.controlPoints[0].x, this.controlPoints[0].y],
-      [this.controlPoints[1].x, this.controlPoints[1].y],
-      [this.controlPoints[2].x, this.controlPoints[2].y],
-      pos
-    )
-    this.path = new Path2D();
-  }
-
-  render() {
-    this.path = new Path2D();
-    this.path.moveTo(...this.splineRenderer(0))
-    for(let t=0.1; t<1; t+=0.1) {
-      this.path.lineTo(...this.splineRenderer(t))
-    }
-    return this.path
-  }
-
-  renderPoints() {
-    const pointsArray = []
-    for(let t=0.1; t<1; t+=0.1) {
-      pointsArray.push(this.splineRenderer(t))
-    }
-    return pointsArray
-  }
-}
-
-class DoublyLinkedList {
-  constructor(vals) {
-    this.data = {
-      value: vals.shift(),
-      next: undefined,
-      prev: undefined
-    }
-    this.fromArray(vals)
-  }
-
-  fromArray(arr) {
-    while(arr.length) {
-      this.next = arr.shift()
-      this.forward()
-    }
-  }
-
-  toArray() {
-    const linkedListToArr = []
-    this.goToFirst()
-
-    while(this.next !== undefined) {
-      linkedListToArr.push(this.value)
-      this.forward()
-    }
-    linkedListToArr.push(this.value)
-    return linkedListToArr
-  }
-
-  goToFirst() {
-    while(this.prev !== undefined) {
-      this.backward()
-    }
-    return this
-  }
-
-  map(func) {
-    const mapArr = []
-    this.goToFirst()
-    while(this.next) {
-      mapArr.push(func(this))
-      this.forward()
-    }
-    return mapArr
-  }
-
-  forward() {
-    this.data = this.next ?? this.data
-  }
-
-  backward() {
-    this.data = this.prev ?? this.data
-  }
-
-  addAfterIndex(index, val) {
-    this.goToFirst()
-    debugger
-    while(index-- && this.next) {
-      this.forward()
-    }
-    this.next = val
-  }
-
-  get next() {
-    return this.data?.next ?? undefined
-  }
-
-  get value() {
-    return this.data.value
-  }
-
-  get prev() {
-    return this.data?.prev ?? undefined
-  }
-
-  set next(val) {
-    this.data.next = {
-      prev: this.data,
-      value: val,
-      next: this.data?.next
-    }
-  }
-
-  set prev(val) {
-    this.data.prev = {
-      next: this.data,
-      value: val,
-      prev: this.data?.prev
-    }
-  }
-}
 
 
-const triAreaFromVec = (v1, v2) => (v1.x*v2.y - v2.x*v1.y)**2
-class BSpline {
-  constructor(...controlPoints) {
-    this.path = new Path2D()
-    this.controlPoints = new DoublyLinkedList(controlPoints)
-
-    this.splines = []
-    this.recreateSplines()
-  }
-
-  render() {
-    this.recreateSplines()
-    const path = new Path2D()
-    path.moveTo(...this.controlPoints.goToFirst().value.coords)
-    this.splines.forEach((curSpline) => {
-      curSpline.renderPoints().forEach(
-        (coords) => path.lineTo(...coords)
-      )
-    }
-    )
-    path.closePath()
-    return path
-  }
-
-  getControlPointIndex(newControlPoint) {
-    const controlPointArray = this.controlPoints.toArray()
-
-    const pairsOfControlPoints = controlPointArray.map(
-      (_,ind, arr) => [arr[ind], arr[ind+1]])
-    
-    const pairsWithTriangleAreas = pairsOfControlPoints.slice(0,-2).map(
-      (pairOfPoints, index) => [index, triAreaFromVec(
-        new Point(
-          pairOfPoints[0].x - newControlPoint.x,
-          pairOfPoints[0].y - newControlPoint.y
-        ),
-        new Point(
-          pairOfPoints[1].x - newControlPoint.x,
-          pairOfPoints[1].y - newControlPoint.y
-        )
-      )]
-    )
-
-    pairsWithTriangleAreas.sort(
-     (a,b) => b[1] < a[1]
-    )
-    const minIndex = pairsWithTriangleAreas[0][0]
-
-    return minIndex
-  }
-
-  addControlPoint(newControlPoint) {
-    const index = this.getControlPointIndex(newControlPoint)
-    this.controlPoints.addAfterIndex(index, newControlPoint)
-    //this.recreateSplines()
-  }
-
-  recreateSplines() {
-    this.splines = this.controlPoints.map((val) => {
-      const curSplineControls =
-        [val.value, val.next.value, val.next.next?.value]
-      return curSplineControls.every((val) => Boolean(val)) ?
-        new QuadSpline(
-          ...curSplineControls, 
-           val.prev == undefined ? 'first' : val.next.next.next == undefined ? 'last' : 'mid') : null
-        })
-    
-    this.splines = this.splines.filter((val) => Boolean(val))
-    }
-}
-
-class Screen {
-  constructor(canvas) {
-    this.path = new Path2D();
-    this.thingsToRender = [];
-    this.canvas = canvas;
-    this.ctx = canvas.getContext('2d')
-  }
-
-  attachRenderableObjects(...objects) {
-    this.thingsToRender.push(...objects)
-  }
-
-  renderAndDraw() {
-    this.path = new Path2D()
-    this.thingsToRender.forEach(
-      (renderableObject) => { this.path.addPath(renderableObject.render()) }
-    )
-    this.ctx.clearRect(0,0,this.canvas.width, this.canvas.height)
-    this.ctx.stroke(this.path)
-    return this.path
-  }
-}
-
-
-bezierLeft = new BSpline(
+const bezierLeft = new BSpline(
   new Point(genParams.R_start_x, genParams.R_start_y),
   new Point(
     (genParams.R_start_x + genParams.R_end_x)/3,
@@ -420,7 +143,7 @@ bezierLeft = new BSpline(
   new Point(genParams.R_end_x, genParams.R_end_y)
 )
 
-bezierRight = new BSpline(
+const bezierRight = new BSpline(
   new Point(genParams.R_start_x, genParams.R_start_y),
   new Point(
     (genParams.R_start_x + genParams.R_end_x)*(2/3),
@@ -450,9 +173,9 @@ let selectedPoint
 
 
 canvas.addEventListener('mousedown', e => {
-  x = e.offsetX;
-  y = e.offsetY;
-  point = new Point(x,y)
+  const x = e.offsetX;
+  const y = e.offsetY;
+  const point = new Point(x,y)
   if (e.ctrlKey) {
     selectedPoint = arrCtrlPoints().find((ctrlPoint) =>
       screen.ctx.isPointInPath(ctrlPoint.path, x, y)
@@ -482,7 +205,8 @@ button.onclick = () => {
   featherPath = screen.renderAndDraw()
   //featherPath.addPath(screen.renderAndDraw())
   //ctx.fill(featherPath)
-  R = Rgen(featherPath)
+  const R = Rgen(featherPath)
   R(0)
   console.log("OK!")
 }
+
